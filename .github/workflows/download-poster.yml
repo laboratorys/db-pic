@@ -1,0 +1,31 @@
+name: Download and Commit Poster
+
+on:
+  workflow_dispatch:  # 允许手动触发
+  schedule:
+    - cron: '0 0 * * *'  # 每天UTC时间0点运行（可选）
+
+jobs:
+  download-poster:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 获取完整历史记录，便于提交更改
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.25'  # 使用你需要的Go版本
+
+      - name: Download and process poster
+        run: |
+          go run main.go
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff --quiet && git diff --staged --quiet || git commit -m "Auto-update: Add new poster [skip ci]"
+          git push
